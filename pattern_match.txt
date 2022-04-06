@@ -1,0 +1,35 @@
+a, b, #, $, %
+a, b, Z_0
+q_0
+q_f
+Z_0
+
+; moving to end of the main string x
+q_0 ! ! 1 noop q_0
+q_0 # ! -1 noop q_copy
+
+; copying string x onto stack
+q_copy a ! -1 push-a q_copy
+q_copy b ! -1 push-b q_copy
+q_copy # ! -1 push-# q_copy
+q_copy % ! -1 push-% q_copy
+q_copy $ ! 1 noop q_right
+
+; moves to the right of the main string x
+q_right ! ! 1 noop q_right
+q_right # ! 1 noop q_check
+
+; start checking with y
+q_check ! ! -1 noop q_reverse
+q_check a a 1 pop q_check
+q_check b b 1 pop q_check
+; if check to end then go to second last state
+q_check % ! 0 noop q_second_last
+; second last state pops in place until z_0 is reached where it terminates
+q_second_last % ! 0 pop q_second_last
+q_second_last % Z_0 0 noop q_f
+
+; pushing back when fails
+q_reverse a ! -1 push-a q_reverse
+q_reverse b ! -1 push-b q_reverse
+q_reverse # ! 1 pop q_check
