@@ -1,9 +1,15 @@
 from parser import parser
 from parser import StackMoveType
+from itertools import zip_longest
 
-def print_ID(state, stack, pointer, word):
+STATE_WIDTH = 9
+POINTER_WIDTH = 1
+STACK_WIDTH = 1
+
+def get_ID(state, stack, pointer, word):
     """
-    Prints the instantaneous description given the state, stack, position and word
+    Prints the instantaneous description given the state, stack, position and word.
+    Shows the entire stack (stacked vertically) and the configuration ontop of the stack.
 
     inputs:
     - current state
@@ -12,17 +18,68 @@ def print_ID(state, stack, pointer, word):
     - the string
 
     outputs:
-    - prints a representation of the above information
+    - returns a representation of the above information
     """
+    # configuration at the top of the stack
+    res = "({:{STATE_WIDTH}.{STATE_WIDTH}}, {:{POINTER_WIDTH}.{POINTER_WIDTH}}, {:{STACK_WIDTH}.{STACK_WIDTH}})\n".format(state, str(pointer), stack[-1], \
+        STACK_WIDTH = STACK_WIDTH, POINTER_WIDTH = POINTER_WIDTH, STATE_WIDTH = STATE_WIDTH)
 
-    print("State: {}".format(state))
-    print("Stack: {}".format(stack))
+    # builds up stack layer by later
+    for symbol in reversed(stack):
+        res += "_" * (STATE_WIDTH + POINTER_WIDTH + STACK_WIDTH + 6) + "\n"
+        res += "|{:^{width}}|\n".format(symbol, width = STATE_WIDTH + POINTER_WIDTH + STACK_WIDTH + 4)
+    res += "_" * (STATE_WIDTH + POINTER_WIDTH + STACK_WIDTH + 6) + "\n"
+    
+    return res
+
+def print_stack_series(ls, write_file):
+    """
+    Given a series of string representations of stacks in a list, print them horizontally
+    , bottom aligned
+
+    inputs:
+    - list of strings representations of stacks
+
+    output:
+    - prints them horizontally, bottom aligned
+    """
+    f = open(write_file, "a")
+    lines = [reversed(ls[i].splitlines()) for i in range(len(ls))]
+    next = zip_longest(*lines, fillvalue = " " * (STATE_WIDTH + POINTER_WIDTH + STACK_WIDTH + 6))
+    next = list(next)
+    next.reverse()
+
+    for l in next:
+        print("".join(l))
+        f.write("".join(l))
+        f.write("\n")
+    
+    f.close()
+
+def print_word_position(pointer, word, write_file):
+    """
+    Given a word and a pointer position, print a diagramatic representation of this
+
+    inputs:
+    - word (str)
+    - pointer position (int)
+
+    outputs:
+    - prints diagramatic representation
+    """
+    f = open(write_file, "a")
+
     print("          " + ((pointer) * " ") + "|")
     print("          " + ((pointer) * " ") + "V")
     print("Position: {}".format(word))
-    print()
 
-def two_dpda_simulator(filename, word, show = False, debug = False):
+    f.write("          " + ((pointer) * " ") + "|\n")
+    f.write("          " + ((pointer) * " ") + "V\n")
+    f.write("Position: {}\n".format(word))
+
+    f.close()
+
+def two_dpda_simulator(filename, word, write_file, show = False, debug = False):
     """
     Runs the given word on the given 2DPDA defined in the given file. Returns
     whether or not the the word is accepted (i.e. ends up with a z_0 on stack + in q_f)
@@ -31,6 +88,7 @@ def two_dpda_simulator(filename, word, show = False, debug = False):
     inputs: 
     - filename where the 2DPDA is defined
     - word which is to be run on 2DPDA
+    - write_file will write the output to file aswell
     - show == True will print the stack, state and pointer at each step
     - debug == True will prompt the user for input before progressing to next step
 
@@ -45,8 +103,11 @@ def two_dpda_simulator(filename, word, show = False, debug = False):
     current_state = q_0
     stack = [z_0]
     pointer = 1
+    visualiser = []
     if show:
-        print_ID(current_state, stack, pointer, word)
+        visualiser.append(get_ID(current_state, stack, pointer, word))
+        print_stack_series(visualiser, write_file)
+        print_word_position(pointer, word, write_file)
 
     while not (current_state == q_f and len(stack) == 1):
         if len(stack) == 0:
@@ -73,9 +134,12 @@ def two_dpda_simulator(filename, word, show = False, debug = False):
             stack.append(next[1].char)
 
         if show:
-            print_ID(current_state, stack, pointer, word)
+            visualiser.append(get_ID(current_state, stack, pointer, word))
+            print_stack_series(visualiser, write_file)
+            print_word_position(pointer, word, write_file)
+
     return True
 
 if __name__ == "__main__":
-    res = two_dpda_simulator("pattern_match.txt", "aabbaa#bb", True, True)
+    res = two_dpda_simulator("pattern_match.txt", "aa#a", "output.txt", True, True)
     print(res)
