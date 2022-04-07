@@ -3,7 +3,7 @@ from parser import StackMoveType
 from itertools import zip_longest
 
 STATE_WIDTH = 9
-POINTER_WIDTH = 1
+POINTER_WIDTH = 2
 STACK_WIDTH = 1
 
 def get_ID(state, stack, pointer, word):
@@ -105,6 +105,10 @@ def two_dpda_simulator(filename, word, write_file, show = False, debug = False):
     pointer = 1
     visualiser = []
     if show:
+        # flush the contents
+        f = open(write_file, "w")
+        f.close()
+
         visualiser.append(get_ID(current_state, stack, pointer, word))
         print_stack_series(visualiser, write_file)
         print_word_position(pointer, word, write_file)
@@ -141,5 +145,5 @@ def two_dpda_simulator(filename, word, write_file, show = False, debug = False):
     return True
 
 if __name__ == "__main__":
-    res = two_dpda_simulator("pattern_match.txt", "aa#a", "output.txt", True, True)
+    res = two_dpda_simulator("pattern_match.txt", "aababbb#bbb", "output.txt", True, False)
     print(res)
