@@ -50,7 +50,6 @@ def print_stack_series(ls, write_file):
     next.reverse()
 
     for l in next:
-        print("".join(l))
         f.write("".join(l))
         f.write("\n")
     
@@ -68,10 +67,6 @@ def print_word_position(pointer, word, write_file):
     - prints diagramatic representation
     """
     f = open(write_file, "a")
-
-    print("          " + ((pointer) * " ") + "|")
-    print("          " + ((pointer) * " ") + "V")
-    print("Position: {}".format(word))
 
     f.write("          " + ((pointer) * " ") + "|\n")
     f.write("          " + ((pointer) * " ") + "V\n")
@@ -113,6 +108,9 @@ def two_dpda_simulator(filename, word, write_file, show = False, debug = False):
         print_stack_series(visualiser, write_file)
         print_word_position(pointer, word, write_file)
 
+        print(stack, end = " ")
+        print("({}, {}, {})".format(current_state, pointer, stack[-1]))
+
     while not (current_state == q_f and len(stack) == 1):
         if len(stack) == 0:
             return False
@@ -142,8 +140,12 @@ def two_dpda_simulator(filename, word, write_file, show = False, debug = False):
             print_stack_series(visualiser, write_file)
             print_word_position(pointer, word, write_file)
 
+            print(stack, end = " ")
+            print("({}, {}, {})".format(current_state, pointer, stack[-1]))
+
+
     return True
 
 if __name__ == "__main__":
-    res = two_dpda_simulator("pattern_match.txt", "aababbb#bbb", "output.txt", True, False)
+    res = two_dpda_simulator("pattern_match.txt", "abababababbaabbabbaabab#abbaabbabba", "output.txt", True, False)
     print(res)
